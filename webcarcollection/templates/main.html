@@ -1,0 +1,19 @@
+<!doctype html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="{{ url_for('static', filename='main.css') }}" rel="stylesheet" media="all" />
+</head>
+<title>My models collection</title>
+<body>
+<div class='right_menu'>
+{% for line in menu %}
+  {{ line }}<br />
+{% endfor %}
+</div>
+<div class='main'>{{ text }} <a href="http://google.com">google.com</a> <br /> <a href="http:/somthing.com">something</a></div>
+{% if name %}
+<h1>Hello, dear {{ name }}!</h1>
+{% else %}
+<h1>Hello, world!</h1>
+{% endif %}
+<body>

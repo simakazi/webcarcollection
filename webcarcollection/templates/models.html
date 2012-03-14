@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block body %}
+    {% if edit %}
+    <div>
+    <form action="" method="POST">
+                    <h3>Добавление модели</h3>
+                    <label for="title" >Наименование:</labe><input name="title" /><br />
+                    <label for="description">Описание:</labe><br /><textarea name="description"></textarea><br />
+                    <label for="scale_onbox">Масштаб заявленный:</labe><input name="scale_onbox" /><br />
+                    <label for="scale_real">Масштаб реальный:</labe><input name="scale_real" /><br />
+                    <label for="when">Когда:</labe><input name="when" /> <br />
+                    <label for="made_by">Производитель:</label> <select name="made_by">
+                        <option value="">None</option>
+                                                    {% for company in companies %}
+                                                        <option value="{{ company.key() }}">{{ company.title }}</option>
+                                                    {% endfor %}
+                                            </select><br />
+                    <label for="seria">Серия:</label> <select name="seria">
+                                <option value="">None</option>
+                                                    {% for seria in serias %}
+                                                         <option value="{{ seria.key() }}">{{ seria.title }}</option>
+                                                    {% endfor %}
+                              </select><br />
+        <input type="submit" name="submit" value="Сохранить">
+    </form>
+    </div>
+    {% endif %}
+
+     {% for model in models %}             
+        {% include 'one_model.html' %}
+    {% endfor %}
+{% endblock %}

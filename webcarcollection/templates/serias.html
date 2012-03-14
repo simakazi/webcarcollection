@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block body %}        
+        <div>
+            <form action="" method="POST">            
+                    <label for="title" >Наименование:</labe><input name="title" value="" /><br />
+                    <label for="description">Описание:</labe><input name="description" value="" type="textarea" /><br />
+                    <label for="country" >Страна:</labe><input name="country" value="" /><br />
+                    <label for="period">Период выпуска:</labe><input name="period" value="" /><br />                 
+                    <label for="numbers">Номеров:</labe><input name="numbers" value="" /><br />                 
+                <input type="submit" name="submit" value="Сохранить">
+            </form>
+</div>
+        
+        {% for seria in serias %}
+          {% include 'one_seria.html' %}
+        {% endfor %}
+{% endblock %}
+
+

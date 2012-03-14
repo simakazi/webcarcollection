@@ -1,0 +1,108 @@
+.color7 {
+    color: #b57d5c; /* peach schnapps */
+}
+.color8 {
+    color: #cf7926; /* tahiti gold */
+}
+.color9 {
+    color: #632f09;
+}
+.color10 {
+    color: #d3d6d1; /* mercury */
+}
+.color11 {
+    color: #0a090c;
+}
+.color12 {
+    color: #9d9589; /* zorba */
+}
+.color13 {
+    color: #eceae4; /* sauvignon */
+}
+.color14 {
+    color: #fbf8ee; /* twilight blue */
+}
+
+a {
+    color: #cf7926;
+}
+
+a:hover {
+    color: #b57d5c;
+    background: #d3d6d1;
+}
+
+a:visited {
+    color:  #632f09;
+}
+
+a:hover img {
+    background: none;    
+    color: none;
+}
+
+body {
+    background: #fbf8ee;
+    color: #0a090c;
+}
+.right_menu {
+    float: left;
+    background: #eceae4;
+    margin-right: 10px;
+    color: #0a090c;
+    width: 150px;
+    line-height: 150%;
+}
+
+.menu_item {
+    width:100%;
+}
+
+.main {
+    position: relative;
+    margin-left: 170px;
+    margin-top: 10px;
+}
+.header {
+    font-size: 2em;
+    padding-left: 1em;
+    color: #0a090c;
+    background: #eceae4;
+}
+.photo_set {
+   float: clear;   
+   display: inline-block;
+   /*height: 340px;      
+   background: #9d9589;   */
+}
+
+input {
+    width: 140px;
+}
+
+form {
+    width: 200px;
+}
+
+form input {
+    width: 100%;
+}
+
+form textarea {
+    width: 100%;
+}
+
+form select {
+    width: 100%;
+}
+
+.photo_slide {    
+    float: left;
+    /*min-height: 300px;*/
+    margin: 10px;
+    padding: 10px;    
+    background:#d3d6d1;
+    
+    text-align: center;
+    vertical-align: middle;    
+}

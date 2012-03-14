@@ -1,0 +1,12 @@
+<a href="{{ url_for('seria',key=seria.key()) }}">{{ seria.title }}</a> ({{ seria.country }})<br />
+{% if seria.period %}
+Выпускается: {{ seria.period }}<br />
+{% endif %}
+{% if seria.numbers %}
+Количество номеров: {{ seria.numbers }}<br />
+{% endif %}
+{{ seria.description | safe}}<br />
+
+{% for model in seria.models %}             
+    {% include 'one_model.html' %}
+{% endfor %}    

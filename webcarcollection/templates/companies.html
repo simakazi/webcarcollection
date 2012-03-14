@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block body %}       
+        <div>
+            <form action="" method="POST">            
+                    <label for="title" >Title:</labe><input name="title" value="" /><br />
+                    <label for="description">Description:</labe><input name="description" value="" type="textarea" /><br />
+                    <label for="country" >Country:</labe><input name="country" value="" /><br />
+                    <label for="site">URL:</labe><input name="site" value="" /><br />                 
+                <input type="submit" name="submit" value="Submit">
+            </form>
+        </div>
+        {% for company in companies %}
+          {% include 'one_company.html' %}
+        {% endfor %}
+{% endblock %}
+
+

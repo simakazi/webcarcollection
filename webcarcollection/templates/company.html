@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block body %}
+        {% if edit  %}
+            <div>
+            <form action="" method="POST">            
+                    <label for="title" >Title:</labe><input name="title" value="{{ company.title }}" /><br />
+                    <label for="description">Description:</labe><input name="description" value="{{ company.description  }}" type="textarea" /><br />
+                    <label for="country" >Country:</labe><input name="country" value="{{ company.country  }}" /><br />
+                    <label for="site">URL:</labe><input name="site" value="{{ company.site  }}" /><br />
+                <input type="submit" name="submit" value="Submit">
+            </form>
+            </div>
+        {% endif %}
+        
+            {% include 'one_company.html' %}
+{% endblock %}
+
+

@@ -1,0 +1,8 @@
+<a href="{{ url_for('company',key=company.key()) }}">{{ company.title }}</a><br />
+{{ company.country }}<br />
+<a href="{{ company.site }}">{{ company.site }}</a><br />
+{{ company.description | safe }}<br />
+
+{% for model in company.models %}             
+    {% include 'one_model.html' %}
+{% endfor %}    

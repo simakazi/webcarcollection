@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block body %}
+        {% if edit  %}
+            <div style="float:left; margin-right: 15px;">
+            <form action="" method="POST">                           
+                    <label for="title" >Наименование:</labe><input name="title" value="{{ model.title }}" /><br />
+                    <label for="description">Описание:</labe><br /><textarea name="description">{{ model.description }}</textarea><br />
+                    <label for="scale_onbox">Масштаб заявленный:</labe><input name="scale_onbox" value="{{ model.scale_onbox if model.scale_onbox }}" /><br />
+                    <label for="scale_real">Масштаб реальный:</labe><input name="scale_real" value="{{ model.scale_real if model.scale_real }}" /><br />
+                    <label for="when">Когда:</labe><input name="when" value="{{ model.when if model.when }}" /> <br />
+                    <label for="made_by">Производитель:</label> <select name="made_by">
+                        <option value="">None</option>
+                                                    {% for company in companies %}
+                                                        <option value="{{ company.key() }}" {% if model.made_by and model.made_by.key() == company.key() %}selected='true'{% endif %}>{{ company.title }}</option>
+                                                    {% endfor %}
+                                            </select><br />
+                    <label for="seria">Серия:</label> <select name="seria">
+                                <option value="">None</option>
+                                                    {% for seria in serias %}
+                                                         <option value="{{ seria.key() }}" {% if model.seria and model.seria.key() == seria.key() %}selected='true'{% endif %}>{{ seria.title }}</option>
+                                                    {% endfor %}
+                              </select><br />
+
+                <input type="submit" name="submit" value="Сохранить">
+            </form><br />           
+</div> 
+        {% endif %}
+<div>
+            {% include 'one_model.html' %}
+</div>
+{% endblock %}
+
