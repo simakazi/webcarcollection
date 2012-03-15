@@ -34,5 +34,5 @@ class Photo(db.Model):
     auto = db.ReferenceProperty(AutoModel, collection_name='photos')    
     file_url = db.StringProperty(required = True)
     thumbnail_url = db.StringProperty(required = True)
-    description = db.StringProperty()
+    description = db.TextProperty()
     

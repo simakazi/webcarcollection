@@ -42,6 +42,7 @@ a:hover img {
 }
 
 body {
+    font-family: arial;
     background: #fbf8ee;
     color: #0a090c;
 }
@@ -54,8 +55,12 @@ body {
     line-height: 150%;
 }
 
+.menu_group {
+    font-weight: bold;    
+}
 .menu_item {
-    width:100%;
+    margin-left: 1em;    
+    
 }
 
 .main {
@@ -64,6 +69,7 @@ body {
     margin-top: 10px;
 }
 .header {
+    font-family: times;
     font-size: 2em;
     padding-left: 1em;
     color: #0a090c;
@@ -74,6 +80,13 @@ body {
    display: inline-block;
    /*height: 340px;      
    background: #9d9589;   */
+}
+
+.collection_header {
+    display: inline-block;
+    background: #eceae4;
+    padding: 15px;
+    margin-bottom: 15px;
 }
 
 input {
@@ -102,6 +115,7 @@ form select {
     margin: 10px;
     padding: 10px;    
     background:#d3d6d1;
+    max-width: 300px;
     
     text-align: center;
     vertical-align: middle;    

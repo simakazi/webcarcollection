@@ -6,6 +6,7 @@ from flaskext.openid import OpenID
 from webcarcollection.model import *
 from webcarcollection.decorators import *
 from google.appengine.api.users import *
+from google.appengine.api import memcache
 
 import datetime
 from flaskext import wtf
@@ -54,38 +55,74 @@ class ModelForm(Form):
 class PostForm(wtf.Form):
     title = wtf.TextField('Title', validators=[validators.Required()])
     content = wtf.TextAreaField('Content', validators=[validators.Required()])
+
+def clearCacheCompany():
+    memcache.delete("menu_list_company")
+    memcache.delete("dict_company")
     
-def menu_list_company():
-    L=[u"Производители"]
+def clearCacheSeria():
+    memcache.delete("menu_list_seria")
+    memcache.delete("dict_seria")
+    
+def dictCompany():
+    L=memcache.get("dict_company")
+    if L is  not None:
+        return L
+    L=[]
     for company in Company.all():
-        L.append((company.title,url_for('company',key=company.key())))    
-    L.append((u"Прочие",url_for('company_models',key="Other")))
+        L.append((company.title,company.key()))
+    memcache.set("dict_company",L)
     return L
 
-def menu_list_seria():
-    L=[u"Серии"]
+def dictSeria():
+    L=memcache.get("dict_seria")
+    if L is  not None:
+        return L
+    L=[]
     for seria in Seria.all():
-        L.append((seria.title,url_for('seria',key=seria.key())))    
+        L.append((seria.title,seria.key()))
+    memcache.set("dict_seria",L)
+    return L
+    
+def menu_list_company(companies=None):
+    L=memcache.get("menu_list_company")
+    if L is not None:
+        return L
+    L=[u"Производители"]
+    for company in (companies or dictCompany()):
+        L.append((company[0],url_for('company',key=company[1])))    
+    L.append((u"Прочие",url_for('company_models',key="Other")))
+    memcache.set("menu_list_company",L)
+    return L
+
+def menu_list_seria(serias=None):
+    L=memcache.get("menu_list_seria")
+    if L is not None:
+        return L
+    L=[u"Серии"]
+    for seria in (serias or dictSeria()):
+        L.append((seria[0],url_for('seria',key=seria[1])))    
     L.append((u"Регулярки",url_for('seria_models',key="Other")))
+    memcache.set("menu_list_seria",L)
     return L
     
 def menu_list_admin():
-    L=[u"Администрирование"]    
+    L=[u"Админка"]    
     L.append((u"Модели",url_for("models")))
     L.append((u"Компании",url_for("companies")))
     L.append((u"Серии",url_for("serias")))    
     return L
     
-def make_menu():
+def make_menu(companies=None,serias=None):
     L=[]
     if not users.get_current_user():
         L.append(("Login",create_login_url('')))
     else:
         L.append(("Logout",create_logout_url('')))
     if users.is_current_user_admin():
-        L+=menu_list_admin()
-    L+=menu_list_company()
-    L+=menu_list_seria()    
+        L+=menu_list_admin()    
+    L+=menu_list_company(companies)
+    L+=menu_list_seria(serias)    
     return L
     
 @app.route('/admin/photo/delete/')
@@ -101,17 +138,18 @@ def photo_delete(key):
 
 @app.route('/admin/model/<key>/photo',methods=['GET','POST'])
 def model_add_photo(key):
-    model=AutoModel.get(key)
     if request.method == 'POST':
-        photo = Photo(file_url=request.form['file'],thumbnail_url=request.form['thumb'],description=request.form['description'],auto=model.key())
+        photo = Photo(file_url=request.form['file'],thumbnail_url=request.form['thumb'],description=request.form['description'],auto=db.Key(key))
         photo.save()        
-        return redirect(url_for('model',key=model.key()))        
+        return redirect(url_for('model',key=db.Key(key)))        
     else:        
-        return render_template('photos.html',model=model,menu=make_menu())   
+        return render_template('photos.html',menu=make_menu())   
 
 @app.route('/model/<key>',methods=['GET','POST'])
 def model(key):
     model=AutoModel.get(key)    
+    if not model:
+        return render_not_found('')
     edit=users.is_current_user_admin()
     if request.method == 'POST' and edit:
             form = ModelForm()
@@ -123,16 +161,16 @@ def model(key):
     companies=None
     serias=None
     if edit:
-        serias=Seria.all()
-        companies=Company.all()
-    return render_template('model.html',edit=edit,model=model,companies=companies,serias=serias,menu=make_menu())
+        serias=dictSeria()
+        companies=dictCompany()
+    return render_template('model.html',edit=edit,model=model,companies=companies,serias=serias,menu=make_menu(companies,serias))
 
 @app.route('/seria/<key>/models')
 def seria_models(key):    
     if (key=="Other"):
         models=AutoModel.all().filter('seria = ',None)
-    else:
-        models=AutoModel.all.filter('seria = ',Seria.get(key))
+    else:        
+        models=AutoModel.all.filter('seria = ',db.Key(key))
     return render_template('models.html',models=models,edit=False,menu=make_menu())
     
 @app.route('/company/<key>/models')
@@ -140,17 +178,20 @@ def company_models(key):
     if (key=="Other"):
         models=AutoModel.all().filter('made_by = ',None)
     else:        
-        models=AutoModel.all().filter('made_by = ',Company.get(key))
+        models=AutoModel.all().filter('made_by = ',db.Key(key))
     return render_template('models.html',models=models,edit=False,menu=make_menu())
     
 @app.route('/company/<key>',methods=['GET','POST'])
 def company(key):    
     company=Company.get(key)
+    if not company:
+        return render_not_found('')
     if request.method == 'POST' and users.is_current_user_admin():
         form=CompanyForm()
         if form.validate():
             form.populate_obj(company)
             company.save()
+            clearCacheCompany()
         else:
             flash(form.errors)                    
     return render_template('company.html',company=company,edit=users.is_current_user_admin(),menu=make_menu())    
@@ -163,15 +204,27 @@ def companies():
         if form.validate():
             form.populate_obj(company)
             company.save()
+            clearCacheCompany()
         else:
             flash(form.errors)                            
-    return render_template('companies.html',companies=Company.all(),menu=make_menu())
+    return render_template('companies.html',menu=make_menu())#,companies=Company.all())
 
+@app.route('/admin/company/<key>/delete',methods=['GET'])
+def company_delete(key):
+    if users.is_current_user_admin():
+        company=Company.get(key)
+        company.delete()
+        clearCacheCompany()
+        return redirect(url_for('companies'))
+    else:
+        return render_not_found("")
+    
 @app.route('/admin/seria/<key>/delete',methods=['GET'])
 def seria_delete(key):
     if users.is_current_user_admin():
         seria=Seria.get(key)
         seria.delete()
+        clearCacheSeria()
         return redirect(url_for('serias'))
     else:
         return render_not_found("")
@@ -179,11 +232,14 @@ def seria_delete(key):
 @app.route('/seria/<key>',methods=['GET','POST'])
 def seria(key):    
     seria=Seria.get(key)
+    if not seria:
+        return render_not_found('')
     if request.method == 'POST' and users.is_current_user_admin():
         form=SeriaForm()
         if form.validate():
             form.populate_obj(seria)
             seria.save()
+            clearCacheSeria()
         else:
             flash(form.errors)       
     return render_template('seria.html',seria=seria,edit=users.is_current_user_admin(),menu=make_menu())    
@@ -196,10 +252,11 @@ def serias():
         if form.validate():
             form.populate_obj(seria)
             seria.save()
+            clearCacheSeria()
         else:
             flash(form.errors)       
         seria.save()
-    return render_template('serias.html',serias=Seria.all(),menu=make_menu())
+    return render_template('serias.html',menu=make_menu())#,serias=Seria.all())
 
     
 @app.route('/admin/models',methods=['GET','POST'])
@@ -213,10 +270,10 @@ def models():
             return redirect(url_for('model',key=model.key()))
         else:
             flash(form.errors)                
-    models=AutoModel.all()
-    companies=Company.all()
-    serias=Seria.all()
-    return render_template('models.html',models=models,companies=companies,serias=serias,edit=True,menu=make_menu())    
+    #models=AutoModel.all()
+    companies=dictCompany()
+    serias=dictSeria()
+    return render_template('models.html',companies=companies,serias=serias,edit=True,menu=make_menu())#,models=models)    
     
 @app.route('/admin/photo',methods=['GET','POST'])
 @app.route('/admin/photo/<key>',methods=['GET','POST'])

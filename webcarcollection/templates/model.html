@@ -11,13 +11,13 @@
                     <label for="made_by">Производитель:</label> <select name="made_by">
                         <option value="">None</option>
                                                     {% for company in companies %}
-                                                        <option value="{{ company.key() }}" {% if model.made_by and model.made_by.key() == company.key() %}selected='true'{% endif %}>{{ company.title }}</option>
+                                                        <option value="{{ company[1] }}" {% if model.made_by and model.made_by.key() == company[1] %}selected='true'{% endif %}>{{ company[0] }}</option>
                                                     {% endfor %}
                                             </select><br />
                     <label for="seria">Серия:</label> <select name="seria">
                                 <option value="">None</option>
                                                     {% for seria in serias %}
-                                                         <option value="{{ seria.key() }}" {% if model.seria and model.seria.key() == seria.key() %}selected='true'{% endif %}>{{ seria.title }}</option>
+                                                         <option value="{{ seria[1] }}" {% if model.seria and model.seria.key() == seria[1] %}selected='true'{% endif %}>{{ seria[0] }}</option>
                                                     {% endfor %}
                               </select><br />
 

@@ -12,13 +12,13 @@
                     <label for="made_by">Производитель:</label> <select name="made_by">
                         <option value="">None</option>
                                                     {% for company in companies %}
-                                                        <option value="{{ company.key() }}">{{ company.title }}</option>
+                                                        <option value="{{ company[1] }}">{{ company[0] }}</option>
                                                     {% endfor %}
                                             </select><br />
                     <label for="seria">Серия:</label> <select name="seria">
                                 <option value="">None</option>
                                                     {% for seria in serias %}
-                                                         <option value="{{ seria.key() }}">{{ seria.title }}</option>
+                                                         <option value="{{ seria[1] }}">{{ seria[0] }}</option>
                                                     {% endfor %}
                               </select><br />
         <input type="submit" name="submit" value="Сохранить">

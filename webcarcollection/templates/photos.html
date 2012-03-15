@@ -24,7 +24,7 @@
     <input type="submit" name="submit" value="Сохранить"><br />
     <input type="button" onclick="javascript:convert_picasa(prompt('Enter url'))" value="Из Picasa" />
     </form></div>
-    {% if model %}
+    {#% if model %}
         <div id="photo_div">
      {% for photo in model.photos %}    
         <div>
@@ -40,5 +40,5 @@
         </div>
     {% endfor %}
     </div>
-    {% endif %}
+    {% endif %#}
 {% endblock %}
