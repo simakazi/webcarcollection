@@ -82,11 +82,22 @@ body {
    background: #9d9589;   */
 }
 
-.collection_header {
+.collection_header {          
     display: inline-block;
     background: #eceae4;
     padding: 15px;
     margin-bottom: 15px;
+}
+
+.post_header {       
+    display: inline-block;
+    background: #eceae4;
+    padding: 5px;
+    margin-top: 15px;    
+}
+
+.post_footer {
+    font-style: italic;
 }
 
 input {

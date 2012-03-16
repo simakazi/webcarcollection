@@ -3,10 +3,10 @@ from google.appengine.ext import db
 from google.appengine.ext import blobstore
 
 class Post(db.Model):
-    title = db.StringProperty(required = True)
-    content = db.TextProperty(required = True)
-    when = db.DateTimeProperty(auto_now_add = True)
-    author = db.UserProperty(required = True)
+    title = db.TextProperty(required = True)
+    content = db.TextProperty()
+    when = db.DateTimeProperty(auto_now_add = True)    
+    tags = db.StringListProperty()
 
 class Company(db.Model):
     title = db.StringProperty(required = True)

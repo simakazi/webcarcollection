@@ -22,6 +22,15 @@ class CompanyForm(Form):
     description=wtf.TextAreaField(u'Описание',validators=[validators.Optional()])
     country=wtf.TextField(u'Страна',validators=[validators.Optional()])
     site=wtf.TextField(u'Сайт',validators=[validators.Optional()])
+
+class PostForm(Form):
+    def __init__(self, *args, **kwargs):
+        kwargs['csrf_enabled'] = False
+        super(PostForm, self).__init__(*args, **kwargs)
+    title=wtf.TextField(u'Заголовок', validators=[validators.Required()])
+    content=wtf.TextAreaField(u'Содержимое',validators=[validators.Optional()])
+    when=wtf.DateField(u'Дата поста',validators=[validators.Optional()])
+    #tags=wtf.TextField(u'Теги', validators=[validators.Optional()])
     
 class SeriaForm(Form):
     title=wtf.TextField(u'Наименование', validators=[validators.Required()])
@@ -64,12 +73,15 @@ def clearCacheSeria():
     memcache.delete("menu_list_seria")
     memcache.delete("dict_seria")
     
+def clearCacheMain():
+    memcache.delete("main")    
+    
 def dictCompany():
     L=memcache.get("dict_company")
     if L is  not None:
         return L
     L=[]
-    for company in Company.all():
+    for company in Company.all().order('title'):
         L.append((company.title,company.key()))
     memcache.set("dict_company",L)
     return L
@@ -79,7 +91,7 @@ def dictSeria():
     if L is  not None:
         return L
     L=[]
-    for seria in Seria.all():
+    for seria in Seria.all().order('title'):
         L.append((seria.title,seria.key()))
     memcache.set("dict_seria",L)
     return L
@@ -111,6 +123,7 @@ def menu_list_admin():
     L.append((u"Модели",url_for("models")))
     L.append((u"Компании",url_for("companies")))
     L.append((u"Серии",url_for("serias")))    
+    L.append((u"Посты",url_for("post")))    
     return L
     
 def make_menu(companies=None,serias=None):
@@ -308,18 +321,32 @@ def index():
 def render_not_found(error):
     return render_template('404.html'),404
     
-@app.route('/posts/new', methods = ['GET', 'POST'])
-@login_required
-def new_post():
-    form = PostForm()
-    if form.validate_on_submit():
-        post = Post(title = form.title.data,
-                    content = form.content.data,
-                    author = users.get_current_user())
-        post.put()
-        flash('Post saved on database.')
-        return redirect(url_for('index'))
-    return render_template('new_post.html', form=form,menu=make_menu())
+@app.route('/admin/post', methods = ['GET', 'POST'])
+@app.route('/admin/post/<key>', methods = ['GET', 'POST'])
+def post(key=None):
+    post=None
+    if key:
+        post=Post.get(key)
+        if not post:
+            return render_not_found('')
+    elif request.method == 'POST':
+        post=Post(title='q')
+    if request.method == 'POST':
+        #form=PostForm()        
+        #if form.validate():
+        #    form.populate_obj(post)
+        post.title=request.form['title']
+        post.content=request.form['content']
+        if (request.form["when"]!=""):
+            post.when=datetime.datetime.strptime(request.form["when"], "%d-%m-%y %H:%M:%S")
+        post.tags=filter(lambda x: x!="",map(unicode.strip,request.form['tags'].split(',')))
+        post.save()            
+        clearCacheMain()
+        #else:
+        #    flash(str(form.data)+str(form.errors)) 
+        #    post=None
+    return render_template('post.html',post=post,edit=users.is_current_user_admin(),menu=make_menu())    
+    
 """
 @app.before_request
 def before_request():

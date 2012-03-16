@@ -8,7 +8,7 @@
             thumb=s.substr(1,s.indexOf(" height")-2)            
             document.forms.photo.file.value=url;
             document.forms.photo.thumb.value=thumb;
-            document.getElementById("photo_div").innerHTML+="<a href='"+url+"'><img src='"+thumb+"'/></a>";
+            document.getElementById("photo_div").innerHTML="<a href='"+url+"'><img src='"+thumb+"'/></a>";
         }
     </script>
 <div>
@@ -24,6 +24,7 @@
     <input type="submit" name="submit" value="Сохранить"><br />
     <input type="button" onclick="javascript:convert_picasa(prompt('Enter url'))" value="Из Picasa" />
     </form></div>
+    <div id="photo_div">    
     {#% if model %}
         <div id="photo_div">
      {% for photo in model.photos %}    
@@ -38,7 +39,7 @@
         <a href="{{photo.file_url}}"><img src="{{photo.thumbnail_url}}" /></a>        
         {{photo.description}}
         </div>
-    {% endfor %}
-    </div>
+    {% endfor %}    
     {% endif %#}
+    </div>
 {% endblock %}

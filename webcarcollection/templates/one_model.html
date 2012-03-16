@@ -2,15 +2,15 @@
 {% if edit %}
 <a href="{{url_for('model_add_photo',key=model.key())}}"><img src="/static/photo_small.png" alt="Add photo" /></a><br/>
 {% endif %}
-{{ model.description | safe }}
+{{ model.description | safe }}<br />
 {% if model.scale_onbox and model.scale_real and model.scale_onbox==model.scale_real %}
-    Scale: 1:{{ model.scale_onbox }}<img src="/static/mark16.png" alt="V" /><br />
+    Масштаб: 1:{{ model.scale_onbox }}<img src="/static/mark16.png" alt="V" /><br />
 {% else %}
     {% if model.scale_onbox %}
-    Scale (on box): {{model.scale_onbox}}<br />
+    Масштаб (заявленный): {{model.scale_onbox}}<br />
     {% endif %}
     {% if model.scale_real %}
-    Scale (real): {{model.scale_real}}<br />
+    Масштаб (реальный): {{model.scale_real}}<br />
     {% endif %}
 {% endif %}
 
