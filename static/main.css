@@ -90,10 +90,16 @@ body {
 }
 
 .post_header {       
-    display: inline-block;
+    /*display: inline-block;*/
     background: #eceae4;
+    text-align: center;
     padding: 5px;
     margin-top: 15px;    
+}
+
+.post_title {
+    font-size: 1.5em;
+    font-family: times;
 }
 
 .post_footer {

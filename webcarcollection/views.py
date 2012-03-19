@@ -313,7 +313,7 @@ def photo(key=None):
     
 @app.route('/')
 def index():    
-    posts=Post.all()    
+    posts=Post.all().order('-when')    
     menu=make_menu()
     return render_template('index.html',menu=menu,posts=posts)
 
@@ -321,24 +321,24 @@ def index():
 def render_not_found(error):
     return render_template('404.html'),404
     
-@app.route('/admin/post', methods = ['GET', 'POST'])
-@app.route('/admin/post/<key>', methods = ['GET', 'POST'])
+@app.route('/post', methods = ['GET', 'POST'])
+@app.route('/post/<key>', methods = ['GET', 'POST'])
 def post(key=None):
     post=None
     if key:
         post=Post.get(key)
         if not post:
             return render_not_found('')
-    elif request.method == 'POST':
+    elif request.method == 'POST' and users.is_current_user_admin():
         post=Post(title='q')
-    if request.method == 'POST':
+    if request.method == 'POST' and users.is_current_user_admin():
         #form=PostForm()        
         #if form.validate():
         #    form.populate_obj(post)
         post.title=request.form['title']
         post.content=request.form['content']
         if (request.form["when"]!=""):
-            post.when=datetime.datetime.strptime(request.form["when"], "%d-%m-%y %H:%M:%S")
+            post.when=datetime.datetime.strptime(request.form["when"], "%Y-%m-%d %H:%M:%S")
         post.tags=filter(lambda x: x!="",map(unicode.strip,request.form['tags'].split(',')))
         post.save()            
         clearCacheMain()

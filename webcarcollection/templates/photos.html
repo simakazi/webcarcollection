@@ -12,7 +12,7 @@
         }
     </script>
 <div>
-    <form action="{{ url_for('photo',key=photo.key()) if photo }}" method="POST" enctype="multipart/form-data" name="photo">
+    <form action="{{ url_for('photo',key=photo.key()) if photo }}" method="POST" name="photo">
     {% if photo %}
     <h3>Изменение фото</h3>
     {% else %}

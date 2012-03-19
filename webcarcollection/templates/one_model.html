@@ -16,6 +16,6 @@
 
 <div class="photo_set">
 {% for photo in model.photos %}
-    <div class="photo_slide"><a href="{{photo.file_url}}"><img src="{{photo.thumbnail_url}}" /></a><br />{{photo.description}}<br />{% if edit %}<a href="{{ url_for('photo',key=photo.key())}}">изменить</a><br /><a href="javascript:delete_photo('{{photo.key()}}');">X</a>{% endif %}</div></a>
+    <div class="photo_slide"><a target="_blank" href="{{photo.file_url}}"><img src="{{photo.thumbnail_url}}" /></a><br />{{photo.description}}<br />{% if edit %}<a href="{{ url_for('photo',key=photo.key())}}">изменить</a><br /><a href="javascript:delete_photo('{{photo.key()}}');">X</a>{% endif %}</div></a>
 {% endfor %}
 </div><br />
