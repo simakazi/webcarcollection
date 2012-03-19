@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
-{% block head %}
-    <html itemscope itemtype="http://schema.org/Blog">    
+{% block head %}    
     {% if post %}
         <meta itemprop="name" content="{{ post.title }}">
         <meta itemprop="description" content="{{ post.content[:100] }}...">
