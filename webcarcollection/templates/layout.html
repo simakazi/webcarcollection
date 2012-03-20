@@ -3,8 +3,9 @@
 <head>
 {% block head %}{% endblock %}
 
-<title>{% block title %}Моя коллекция моделей{% endblock %}</title>
+<title>{% block title %}Коллекция автомоделей Simakazi{% endblock %}</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta name="google-site-verification" content="U4AAS4Kzqpob_JPHjRV80609mHTLXrZD_rWTZECW6bA" />
 <link href="/static/main.css" rel="stylesheet" media="all" />
 {% if edit %}
 <script>
@@ -17,7 +18,8 @@
 {% endif %}
 </head>
 <body>
-<div class="header">Моя коллекция моделей</div>
+<div class="header"><a href="{{ url_for('feed') }}"><img src="/static/atom.png" alt="Subscribe" style="vertical-align: baseline;" /></a> Коллекция автомоделей Simakazi</div>
+<div id="cse" style="width: 100%;">Loading...</div>
 {% for message in get_flashed_messages() %}
   <p class=message>{{ message }}</p>
 {% endfor %}
@@ -47,5 +49,18 @@
     var s = document.getElementById('plus_one'); s.parentNode.insertBefore(po, s);
   })();
 </script>
+
+
+<script src="https://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript"> 
+  google.load('search', '1', {language : 'ru'});
+  google.setOnLoadCallback(function() {
+    var customSearchOptions = {};  var customSearchControl = new google.search.CustomSearchControl(
+      '000538932991213035515:WMX1868131255', customSearchOptions);
+    customSearchControl.setResultSetSize(google.search.Search.LARGE_RESULTSET);
+    customSearchControl.draw('cse');
+  }, true);
+</script>
+<!--link rel="stylesheet" href="http://www.google.com/cse/style/look/default.css" type="text/css" /-->
 </body>
 </html>

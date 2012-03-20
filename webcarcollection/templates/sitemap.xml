@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<url>
+  <loc>{{ url_for('index',_external=True) }}</loc>
+</url>
+<url>
+  <loc>{{ url_for('seria_models',key='Other',_external=True) }}</loc>
+</url>
+<url>
+  <loc>{{ url_for('company_models',key='Other',_external=True) }}</loc>
+</url>
+{% for company in companies %}
+    <url>
+        <loc>{{ url_for('company',key=company[1],_external=True) }}</loc>
+    </url>
+{% endfor %}
+{% for seria in serias %}
+    <url>
+        <loc>{{ url_for('seria',key=seria[1],_external=True) }}</loc>
+    </url>
+{% endfor %}
+{% for model in models %}
+    <url>
+        <loc>{{ url_for('model',key=model.key(),_external=True) }}</loc>
+    </url>
+{% endfor %}
+{% for post in posts %}
+    <url>
+        <loc>{{ url_for('post',key=post.key(),_external=True) }}</loc>
+    </url>
+{% endfor %}
+</urlset>

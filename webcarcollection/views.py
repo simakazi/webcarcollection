@@ -7,6 +7,7 @@ from webcarcollection.model import *
 from webcarcollection.decorators import *
 from google.appengine.api.users import *
 from google.appengine.api import memcache
+from werkzeug.contrib.atom import AtomFeed
 
 import datetime
 from flaskext import wtf
@@ -68,13 +69,16 @@ class PostForm(wtf.Form):
 def clearCacheCompany():
     memcache.delete("menu_list_company")
     memcache.delete("dict_company")
+    memcache.delete("sitemap")
     
 def clearCacheSeria():
     memcache.delete("menu_list_seria")
     memcache.delete("dict_seria")
+    memcache.delete("sitemap")
     
 def clearCacheMain():
-    memcache.delete("main")    
+    memcache.delete("main")  
+    memcache.delete("sitemap")
     
 def dictCompany():
     L=memcache.get("dict_company")
@@ -102,8 +106,8 @@ def menu_list_company(companies=None):
         return L
     L=[u"Производители"]
     for company in (companies or dictCompany()):
-        L.append((company[0],url_for('company',key=company[1])))    
-    L.append((u"Прочие",url_for('company_models',key="Other")))
+        L.append((company[0],url_for('company',key=company[1],_external=True)))    
+    L.append((u"Прочие",url_for('company_models',key="Other",_external=True)))
     memcache.set("menu_list_company",L)
     return L
 
@@ -113,8 +117,8 @@ def menu_list_seria(serias=None):
         return L
     L=[u"Серии"]
     for seria in (serias or dictSeria()):
-        L.append((seria[0],url_for('seria',key=seria[1])))    
-    L.append((u"Регулярки",url_for('seria_models',key="Other")))
+        L.append((seria[0],url_for('seria',key=seria[1],_external=True)))    
+    L.append((u"Регулярки",url_for('seria_models',key="Other",_external=True)))
     memcache.set("menu_list_seria",L)
     return L
     
@@ -178,6 +182,14 @@ def model(key):
         companies=dictCompany()
     return render_template('model.html',edit=edit,model=model,companies=companies,serias=serias,menu=make_menu(companies,serias))
 
+@app.route('/sitemap.xml')
+def sitemap():
+    resp=memcache.get('sitemap')
+    if resp is None:
+        resp=render_template('sitemap.xml',companies=dictCompany(),serias=dictSeria(),models=AutoModel.all(),posts=Post.all())
+        memcache.set('sitemap',resp)
+    return resp
+    
 @app.route('/seria/<key>/models')
 def seria_models(key):    
     if (key=="Other"):
@@ -332,9 +344,6 @@ def post(key=None):
     elif request.method == 'POST' and users.is_current_user_admin():
         post=Post(title='q')
     if request.method == 'POST' and users.is_current_user_admin():
-        #form=PostForm()        
-        #if form.validate():
-        #    form.populate_obj(post)
         post.title=request.form['title']
         post.content=request.form['content']
         if (request.form["when"]!=""):
@@ -342,99 +351,18 @@ def post(key=None):
         post.tags=filter(lambda x: x!="",map(unicode.strip,request.form['tags'].split(',')))
         post.save()            
         clearCacheMain()
-        #else:
-        #    flash(str(form.data)+str(form.errors)) 
-        #    post=None
     return render_template('post.html',post=post,edit=users.is_current_user_admin(),menu=make_menu())    
     
-"""
-@app.before_request
-def before_request():
-    g.user = None
-    if 'openid' in session:
-        g.user = User.query.filter_by(openid=session['openid']).first()
-
-
-@app.after_request
-def after_request(response):
-    db_session.remove()
-    return response
-    
-@app.route('/login', methods=['GET', 'POST'])
-@oid.loginhandler
-def login():
-    if g.user is not None:
-        return redirect(oid.get_next_url())
-    if request.method == 'POST':
-        openid = request.form.get('openid')
-        if openid:
-            return oid.try_login(openid, ask_for=['email', 'fullname',
-                                                  'nickname'])
-    return render_template('login.html', next=oid.get_next_url(),
-                           error=oid.fetch_error())
-
-
-@oid.after_login
-def create_or_login(resp):
-    session['openid'] = resp.identity_url
-    user = User.query.filter_by(openid=resp.identity_url).first()
-    if user is not None:
-        flash(u'Successfully signed in')
-        g.user = user
-        return redirect(oid.get_next_url())
-    return redirect(url_for('create_profile', next=oid.get_next_url(),
-                            name=resp.fullname or resp.nickname,
-                            email=resp.email))
-
-
-@app.route('/create-profile', methods=['GET', 'POST'])
-def create_profile():
-    if g.user is not None or 'openid' not in session:
-        return redirect(url_for('index'))
-    if request.method == 'POST':
-        name = request.form['name']
-        email = request.form['email']
-        if not name:
-            flash(u'Error: you have to provide a name')
-        elif '@' not in email:
-            flash(u'Error: you have to enter a valid email address')
-        else:
-            flash(u'Profile successfully created')
-            db_session.add(User(name, email, session['openid']))
-            db_session.commit()
-            return redirect(oid.get_next_url())
-    return render_template('create_profile.html', next_url=oid.get_next_url())
-
-
-@app.route('/profile', methods=['GET', 'POST'])
-def edit_profile():    
-    if g.user is None:
-        abort(401)
-    form = dict(name=g.user.name, email=g.user.email)
-    if request.method == 'POST':
-        if 'delete' in request.form:
-            db_session.delete(g.user)
-            db_session.commit()
-            session['openid'] = None
-            flash(u'Profile deleted')
-            return redirect(url_for('index'))
-        form['name'] = request.form['name']
-        form['email'] = request.form['email']
-        if not form['name']:
-            flash(u'Error: you have to provide a name')
-        elif '@' not in form['email']:
-            flash(u'Error: you have to enter a valid email address')
-        else:
-            flash(u'Profile successfully created')
-            g.user.name = form['name']
-            g.user.email = form['email']
-            db_session.commit()
-            return redirect(url_for('edit_profile'))
-    return render_template('edit_profile.html', form=form)
-
-@app.route('/logout')
-def logout():
-    session.pop('openid', None)
-    flash(u'You have been signed out')
-    return redirect(oid.get_next_url())
-"""
+@app.route('/feed.atom')
+def feed():
+    feed = AtomFeed(u'Коллекция автомоделей Simakazi',
+                    feed_url=request.url, url=request.url_root)
+    posts = Post.all().order('-when').fetch(limit=15)
+    for post in posts:
+        feed.add(unicode(post.title), unicode(post.content),
+                 content_type='html',
+                 author='Simakazi',
+                 url=url_for('post',key=post.key(),_external=True),
+                 updated=post.when,
+                 published=post.when)
+    return feed.get_response()
