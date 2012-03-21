@@ -46,6 +46,7 @@ class ModelForm(Form):
     scale_onbox=wtf.IntegerField(u'Масштаб заявленный',validators=[validators.Optional()])
     scale_real=wtf.IntegerField(u'Масштаб реальный',validators=[validators.Optional()])
     when=wtf.DateField(u'Дата',validators=[validators.Optional()])
+    number=wtf.IntegerField(u'Номер',validators=[validators.Optional()])    
     made_by=wtf.TextField(u'Производитель')
     seria=wtf.TextField(u'Серия')
     
@@ -79,34 +80,91 @@ def clearCacheSeria():
 def clearCacheMain():
     memcache.delete("main")  
     memcache.delete("sitemap")
+    memcache.delete("dict_post")
+    memcache.delete("feed")
+    
+def clearCacheModel():
+    memcache.delete("dict_model")
+    
+def clearCachePhoto():
+    memcache.delete("dict_photo")
+    
+@app.route("/admin/clear_cache")
+def clear_cache():
+    clearCacheCompany()
+    clearCacheMain()
+    clearCacheModel()
+    clearCacheSeria()
+    clearCachePhoto()
     
 def dictCompany():
     L=memcache.get("dict_company")
-    if L is  not None:
-        return L
-    L=[]
-    for company in Company.all().order('title'):
-        L.append((company.title,company.key()))
-    memcache.set("dict_company",L)
+    if L is None:
+        L={}
+        for company in Company.all():
+            L[company.key()]=company 
+        memcache.set("dict_company",L)
     return L
 
+def dictModel():
+    L=memcache.get("dict_model")
+    if L is None:
+        L={}
+        for model in AutoModel.all():
+            L[model.key()]=model
+        memcache.set("dict_model",L)
+    return L
+
+def dictPhoto():
+    L=memcache.get("dict_photo")
+    if L is None:
+        L={}
+        for photo in Photo.all():
+            if not L.has_key(photo._auto):
+                L[photo._auto]=[]
+            L[photo._auto]+=[photo]
+        memcache.set("dict_photo",L)
+    return L
+    
+def dictPost():
+    L=memcache.get("dict_post")
+    if L is None:
+        L={}
+        for post in Post.all():
+            L[post.key()]=post
+        memcache.set("dict_post",L)
+    return L
+    
+def getSeriaModel(seria_key):
+    L=[]
+    for model in dictModel().values():        
+        if model._seria==seria_key:
+            L.append(model)
+    return L
+    
+def getCompanyModel(company_key):
+    L=[]
+    for model in dictModel().values():
+        if model._made_by==company_key:
+            L.append(model)
+    return L
+    
 def dictSeria():
     L=memcache.get("dict_seria")
-    if L is  not None:
-        return L
-    L=[]
-    for seria in Seria.all().order('title'):
-        L.append((seria.title,seria.key()))
-    memcache.set("dict_seria",L)
+    if L is None:
+        L={}
+        for seria in Seria.all():
+            L[seria.key()]=seria
+        memcache.set("dict_seria",L)
     return L
     
 def menu_list_company(companies=None):
     L=memcache.get("menu_list_company")
     if L is not None:
         return L
-    L=[u"Производители"]
-    for company in (companies or dictCompany()):
-        L.append((company[0],url_for('company',key=company[1],_external=True)))    
+    L=[u"Производители"]    
+    for (key,company) in sorted((companies or dictCompany()).items(),key=lambda x:x[1].title):
+        L.append((company.title,url_for('company',key=key,_external=True)))    
     L.append((u"Прочие",url_for('company_models',key="Other",_external=True)))
     memcache.set("menu_list_company",L)
     return L
@@ -116,8 +174,8 @@ def menu_list_seria(serias=None):
     if L is not None:
         return L
     L=[u"Серии"]
-    for seria in (serias or dictSeria()):
-        L.append((seria[0],url_for('seria',key=seria[1],_external=True)))    
+    for (key,seria) in sorted((serias or dictSeria()).items(),key=lambda x:x[1].title):
+        L.append((seria.title,url_for('seria',key=key,_external=True)))    
     L.append((u"Регулярки",url_for('seria_models',key="Other",_external=True)))
     memcache.set("menu_list_seria",L)
     return L
@@ -149,6 +207,7 @@ def photo_delete(key):
         photo=Photo.get(key)
         model=photo.auto
         photo.delete()
+        clearCachePhoto()
         return redirect(url_for('model',key=model.key()))
     else:
         return render_not_found('')
@@ -164,7 +223,7 @@ def model_add_photo(key):
 
 @app.route('/model/<key>',methods=['GET','POST'])
 def model(key):
-    model=AutoModel.get(key)    
+    model=dictModel()[db.Key(key)]#AutoModel.get(key)    
     if not model:
         return render_not_found('')
     edit=users.is_current_user_admin()
@@ -172,7 +231,8 @@ def model(key):
             form = ModelForm()
             if form.validate():
                 form.populate_obj(model)                               
-                model.save()                
+                model.save()        
+                clearCacheModel()
             else:
                 flash(form.errors)                
     companies=None
@@ -180,35 +240,35 @@ def model(key):
     if edit:
         serias=dictSeria()
         companies=dictCompany()
-    return render_template('model.html',edit=edit,model=model,companies=companies,serias=serias,menu=make_menu(companies,serias))
+    return render_template('model.html',edit=edit,model=model,photos=dictPhoto(),companies=companies,serias=serias,menu=make_menu(companies,serias))
 
 @app.route('/sitemap.xml')
 def sitemap():
     resp=memcache.get('sitemap')
     if resp is None:
-        resp=render_template('sitemap.xml',companies=dictCompany(),serias=dictSeria(),models=AutoModel.all(),posts=Post.all())
+        resp=render_template('sitemap.xml',companies=dictCompany(),serias=dictSeria(),models=dictModel(),posts=dictPost())
         memcache.set('sitemap',resp)
     return resp
     
 @app.route('/seria/<key>/models')
 def seria_models(key):    
     if (key=="Other"):
-        models=AutoModel.all().filter('seria = ',None)
+        models=getSeriaModel(None)#AutoModel.all().filter('seria = ',None)
     else:        
-        models=AutoModel.all.filter('seria = ',db.Key(key))
-    return render_template('models.html',models=models,edit=False,menu=make_menu())
+        models=getSeriaModel(key)#AutoModel.all.filter('seria = ',db.Key(key))
+    return render_template('models.html',models=models,edit=False,menu=make_menu(),serias=dictSeria(),companies=dictCompany(),photos=dictPhoto())
     
 @app.route('/company/<key>/models')
 def company_models(key):
     if (key=="Other"):
-        models=AutoModel.all().filter('made_by = ',None)
+        models=getCompanyModel(None)#AutoModel.all().filter('made_by = ',None)
     else:        
-        models=AutoModel.all().filter('made_by = ',db.Key(key))
-    return render_template('models.html',models=models,edit=False,menu=make_menu())
+        models=getCompanyModel(key)#AutoModel.all().filter('made_by = ',db.Key(key))
+    return render_template('models.html',models=models,edit=False,menu=make_menu(),serias=dictSeria(),companies=dictCompany(),photos=dictPhoto())
     
 @app.route('/company/<key>',methods=['GET','POST'])
 def company(key):    
-    company=Company.get(key)
+    company=dictCompany()[db.Key(key)]
     if not company:
         return render_not_found('')
     if request.method == 'POST' and users.is_current_user_admin():
@@ -218,8 +278,8 @@ def company(key):
             company.save()
             clearCacheCompany()
         else:
-            flash(form.errors)                    
-    return render_template('company.html',company=company,edit=users.is_current_user_admin(),menu=make_menu())    
+            flash(form.errors)                
+    return render_template('company.html',company=company,models=getCompanyModel(company.key()),edit=users.is_current_user_admin(),menu=make_menu(),serias=dictSeria(),companies=dictCompany(),photos=dictPhoto())    
     
 @app.route('/admin/companies',methods=['GET','POST'])
 def companies():
@@ -256,7 +316,7 @@ def seria_delete(key):
     
 @app.route('/seria/<key>',methods=['GET','POST'])
 def seria(key):    
-    seria=Seria.get(key)
+    seria=dictSeria()[db.Key(key)]
     if not seria:
         return render_not_found('')
     if request.method == 'POST' and users.is_current_user_admin():
@@ -267,7 +327,7 @@ def seria(key):
             clearCacheSeria()
         else:
             flash(form.errors)       
-    return render_template('seria.html',seria=seria,edit=users.is_current_user_admin(),menu=make_menu())    
+    return render_template('seria.html',seria=seria,models=getSeriaModel(seria.key()),edit=users.is_current_user_admin(),menu=make_menu(),serias=dictSeria(),companies=dictCompany(),photos=dictPhoto())    
     
 @app.route('/admin/serias',methods=['GET','POST'])
 def serias():
@@ -292,13 +352,11 @@ def models():
             model=AutoModel(title='title')
             form.populate_obj(model)
             model.save()
+            clearCacheModel()
             return redirect(url_for('model',key=model.key()))
         else:
-            flash(form.errors)                
-    #models=AutoModel.all()
-    companies=dictCompany()
-    serias=dictSeria()
-    return render_template('models.html',companies=companies,serias=serias,edit=True,menu=make_menu())#,models=models)    
+            flash(form.errors)                    
+    return render_template('models.html',companies=dictCompany(),serias=dictSeria(),edit=True,menu=make_menu())#,models=models)    
     
 @app.route('/admin/photo',methods=['GET','POST'])
 @app.route('/admin/photo/<key>',methods=['GET','POST'])
@@ -309,12 +367,13 @@ def photo(key=None):
             photo.file_url=request.form['file']
             photo.thumbnail_url=request.form['thumb']
             photo.description=request.form['description']
-            photo.save()                
+            photo.save()                      
             return redirect(url_for('model',key=photo.auto.key()))
         else:
             photo = Photo(file_url=request.form['file'],thumbnail_url=request.form['thumb'],description=request.form['description'])
             photos=Photo.all()
-            photo.save()                
+            photo.save()          
+        clearCachePhoto()
     elif key:
         photo=Photo.get(key)
         photos=[photo]
@@ -325,7 +384,8 @@ def photo(key=None):
     
 @app.route('/')
 def index():    
-    posts=Post.all().order('-when')    
+    posts=dictPost().values()
+    posts.sort(key=lambda x:x.when,reverse=True)
     menu=make_menu()
     return render_template('index.html',menu=menu,posts=posts)
 
@@ -338,7 +398,7 @@ def render_not_found(error):
 def post(key=None):
     post=None
     if key:
-        post=Post.get(key)
+        post=dictPost()[db.Key(key)]
         if not post:
             return render_not_found('')
     elif request.method == 'POST' and users.is_current_user_admin():
@@ -355,14 +415,19 @@ def post(key=None):
     
 @app.route('/feed.atom')
 def feed():
-    feed = AtomFeed(u'Коллекция автомоделей Simakazi',
-                    feed_url=request.url, url=request.url_root)
-    posts = Post.all().order('-when').fetch(limit=15)
-    for post in posts:
-        feed.add(unicode(post.title), unicode(post.content),
-                 content_type='html',
-                 author='Simakazi',
-                 url=url_for('post',key=post.key(),_external=True),
-                 updated=post.when,
-                 published=post.when)
-    return feed.get_response()
+    resp=memcache.get("feed")
+    if resp is None:
+        feed = AtomFeed(u'Коллекция автомоделей Simakazi',
+                        feed_url=request.url, url=request.url_root)
+        posts = sorted(dictPost().values(),key=lambda x:x.when,reverse=True)[:15]
+        
+        for post in posts:
+            feed.add(unicode(post.title), unicode(post.content),
+                    content_type='html',
+                    author='Simakazi',
+                    url=url_for('post',key=post.key(),_external=True),
+                    updated=post.when,
+                    published=post.when)
+        resp=feed.get_response()
+    memcache.set("feed",resp)
+    return resp

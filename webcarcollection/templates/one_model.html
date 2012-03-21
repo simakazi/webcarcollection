@@ -2,6 +2,12 @@
 {% if edit %}
 <a href="{{url_for('model_add_photo',key=model.key())}}"><img src="/static/photo_small.png" alt="Add photo" /></a><br/>
 {% endif %}
+{% if model._seria %}
+    Серия: <a href="{{ url_for('seria',key=model._seria) }}">{{ serias[model._seria].title }}</a> {% if model.number %} №{{ model.number }}  {% endif %}<br />
+{% endif %}
+{% if model._made_by %}
+    Поризводитель: <a href="{{ url_for('company',key=model._made_by) }}">{{ companies[model._made_by].title }}</a><br />
+{% endif %}
 {{ model.description | safe }}<br />
 {% if model.scale_onbox and model.scale_real and model.scale_onbox==model.scale_real %}
     Масштаб: 1:{{ model.scale_onbox }}<img src="/static/mark16.png" alt="V" /><br />
@@ -13,9 +19,8 @@
     Масштаб (реальный): {{model.scale_real}}<br />
     {% endif %}
 {% endif %}
-
 <div class="photo_set">
-{% for photo in model.photos %}
+{% for photo in photos[model.key()] %}
     <div class="photo_slide"><a target="_blank" href="{{photo.file_url}}"><img src="{{photo.thumbnail_url}}" /></a><br />{{photo.description}}<br />{% if edit %}<a href="{{ url_for('photo',key=photo.key())}}">изменить</a><br /><a href="javascript:delete_photo('{{photo.key()}}');">X</a>{% endif %}</div></a>
 {% endfor %}
 </div><br />

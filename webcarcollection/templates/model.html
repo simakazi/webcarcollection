@@ -10,16 +10,17 @@
                     <label for="when">Когда:</labe><input name="when" value="{{ model.when if model.when }}" /> <br />
                     <label for="made_by">Производитель:</label> <select name="made_by">
                         <option value="">None</option>
-                                                    {% for company in companies %}
-                                                        <option value="{{ company[1] }}" {% if model.made_by and model.made_by.key() == company[1] %}selected='true'{% endif %}>{{ company[0] }}</option>
+                                                    {% for (key,company) in companies.items() %}
+                                                        <option value="{{ key }}" {% if model.made_by and model._made_by == key %}selected='true'{% endif %}>{{ company.title }}</option>
                                                     {% endfor %}
                                             </select><br />
                     <label for="seria">Серия:</label> <select name="seria">
                                 <option value="">None</option>
-                                                    {% for seria in serias %}
-                                                         <option value="{{ seria[1] }}" {% if model.seria and model.seria.key() == seria[1] %}selected='true'{% endif %}>{{ seria[0] }}</option>
+                                                    {% for (key,seria) in serias.items() %}
+                                                         <option value="{{ key }}" {% if model.seria and model._seria == key %}selected='true'{% endif %}>{{ seria.title }}</option>
                                                     {% endfor %}
                               </select><br />
+                    <label for="number">Номер:</labe><input name="number" value="{{ model.number if model.number }}" /> <br />
 
                 <input type="submit" name="submit" value="Сохранить">
             </form><br />           

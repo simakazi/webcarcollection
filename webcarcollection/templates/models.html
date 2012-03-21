@@ -11,16 +11,18 @@
                     <label for="when">Когда:</labe><input name="when" /> <br />
                     <label for="made_by">Производитель:</label> <select name="made_by">
                         <option value="">None</option>
-                                                    {% for company in companies %}
-                                                        <option value="{{ company[1] }}">{{ company[0] }}</option>
+                                                    {% for (key,company) in companies.items() %}
+                                                        <option value="{{ key }}">{{ company.title }}</option>
                                                     {% endfor %}
                                             </select><br />
                     <label for="seria">Серия:</label> <select name="seria">
                                 <option value="">None</option>
-                                                    {% for seria in serias %}
-                                                         <option value="{{ seria[1] }}">{{ seria[0] }}</option>
+                                                    {% for (key,seria) in serias.items() %}
+                                                         <option value="{{ key }}">{{ seria.title }}</option>
                                                     {% endfor %}
                               </select><br />
+                    <label for="number">Номер:</labe><input name="number" /> <br />
+
         <input type="submit" name="submit" value="Сохранить">
     </form>
     </div>

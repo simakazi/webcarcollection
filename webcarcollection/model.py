@@ -29,6 +29,7 @@ class AutoModel(db.Model):
     when = db.DateProperty()
     made_by = db.ReferenceProperty(Company,collection_name='models')
     seria = db.ReferenceProperty(Seria,collection_name='models')
+    number = db.IntegerProperty()
    
 class Photo(db.Model):
     auto = db.ReferenceProperty(AutoModel, collection_name='photos')    

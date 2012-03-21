@@ -5,7 +5,7 @@
 {{ company.description | safe }}<br />
 </div>
 <div>
-{% for model in company.models %}             
+{% for model in models %}             
     {% include 'one_model.html' %}
 {% endfor %}    
 </div>
