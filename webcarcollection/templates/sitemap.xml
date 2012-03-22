@@ -30,7 +30,7 @@
 {% endfor %}
 {% for post in posts %}
     <url>
-        <loc>{{ url_for('post',key=post.key(),_external=True) }}</loc>
+        <loc>{{ url_for('post',key=post,_external=True) }}</loc>
     </url>
 {% endfor %}
 </urlset>

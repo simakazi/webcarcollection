@@ -18,7 +18,7 @@
 {% endif %}
 </head>
 <body>
-<div class="header"><a href="{{ url_for('feed') }}"><img src="/static/atom.png" alt="Subscribe" style="vertical-align: baseline;" /></a> Коллекция автомоделей Simakazi</div>
+<div class="header"><a href="{{ url_for('feed') }}"><img src="/static/atom.png" alt="Subscribe" style="vertical-align: baseline;" /></a> <a href="{{ url_for('index',_external=True) }}">Коллекция автомоделей Simakazi</a></div>
 <div id="cse" style="width: 100%;">Loading...</div>
 {% for message in get_flashed_messages() %}
   <p class=message>{{ message }}</p>
@@ -61,6 +61,16 @@
     customSearchControl.draw('cse');
   }, true);
 </script>
-<!--link rel="stylesheet" href="http://www.google.com/cse/style/look/default.css" type="text/css" /-->
+
+<script type="text/javascript">
+    var disqus_shortname = 'simakazi';
+    
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>

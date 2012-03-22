@@ -235,11 +235,11 @@ def model(key):
                 clearCacheModel()
             else:
                 flash(form.errors)                
-    companies=None
-    serias=None
-    if edit:
-        serias=dictSeria()
-        companies=dictCompany()
+    #companies=None
+    #serias=None
+    #if edit:
+    serias=dictSeria()
+    companies=dictCompany()
     return render_template('model.html',edit=edit,model=model,photos=dictPhoto(),companies=companies,serias=serias,menu=make_menu(companies,serias))
 
 @app.route('/sitemap.xml')
